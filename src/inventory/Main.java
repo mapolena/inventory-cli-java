@@ -8,54 +8,47 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO 自動生成されたメソッド・スタブ
-		Purchase purchase = new Purchase(LocalDate.of(2026, 3, 1),"仕入れ先A",3000);
-
-		Product product = new Product("SKU001", "COMME des GARCONS", "Jacket", purchase);
-
-		Sale sale = new Sale(LocalDate.of(2026, 3, 2), 8000, 800, "Mercari");
-
-		product.sell(sale);
-		//	product.sell(sale);	//防御ロジック確認
-
-		System.out.println(product.getGrossProfit());
-
 		ProductService service = new ProductService();
-		service.addProduct(product);
+		
+		initializeSampleData(service);
+		
+		Scanner scanner = new Scanner(System.in);
+		
+		runMenu(scanner, service);
+		
+		scanner.close();
+	}
 
-		Scanner scanner = new Scanner(System.in);	//コンソール入力
-
-		//メニュー入力
-		while(true) {
+	public static void runMenu(Scanner scanner, ProductService service) {
+		while(true) {	//メニュー入力
 			System.out.println("1:商品追加 2:一覧 3:削除 4:販売　5:終了");
-
-			int choice = scanner.nextInt();
+			
+			int choice;
+			
+			try {
+				choice = scanner.nextInt();
+			}catch(Exception e) {
+				System.out.println("数字を入力してください");
+				scanner.nextLine();
+				continue;
+			}
 
 			switch(choice) {
-				case 1:
-					addProductMenu(scanner, service);
-					break;
-
-				case 2:
-					printInventory(service.getAllProducts());
-					break;
-
-				case 3:
-					removeProductMenu(scanner, service);
-					break;
-
-				case 4:
-					sellProduct(scanner, service);
-					break;
-
-				case 5:
-					System.out.println("終了します");
-					return;
+			case 1 -> addProductMenu(scanner, service);
+			case 2 -> printInventory(service.getAllProducts());
+			case 3 -> removeProductMenu(scanner, service);
+			case 4 -> sellProduct(scanner, service);
+			case 5 -> {
+				System.out.println("終了します");
+				return;
+			}
 			}
 		}
 	}
 
+
 	public static void addProductMenu(Scanner scanner, ProductService service) {
-		scanner.nextLine();	//改行を消す（重要）
+		scanner.nextLine(); //改行を消す（重要）
 
 		System.out.println("SKU");
 		String sku = scanner.nextLine();
@@ -95,11 +88,11 @@ public class Main {
 		System.out.println("販売するSKUを入力してください");
 		String sku = scanner.nextLine();
 
-		Product foundProduct= service.findBySku(sku);
+		Product foundProduct = service.findBySku(sku);
 
-		if(foundProduct == null) {
+		if (foundProduct == null) {
 			System.out.println("商品が見つかりません");
-			return;	//メソッドを終了する（mainのwhileループに戻る）（エラーのため、continue;から変更した）
+			return; //メソッドを終了する（mainのwhileループに戻る）（エラーのため、continue;から変更した）
 		}
 
 		System.out.println("販売価格を入力してください");
@@ -121,11 +114,19 @@ public class Main {
 	}
 
 	public static void printInventory(List<Product> products) {
-		for(Product p : products) {
-			System.out.println(p.getSku() + " " + p.getBrandName() + " " + (p.isSold() ? "売却済" : "在庫あり"));
+		for (Product p : products) {
+			System.out.printf("%s %s %s%n",
+					p.getSku(),
+					p.getBrandName(),
+					p.isSold() ? "売却済" : "在庫あり");
 		}
 	}
-
-
-
+	
+	public static void initializeSampleData(ProductService service) {
+		Purchase purchase = new Purchase(LocalDate.of(2026,3,1),"仕入れ先A",3000);
+		Product product = new Product("SKU001","COMME des GARCONS","Jacket",purchase);
+		Sale sale = new Sale(LocalDate.of(2026,3,2),8000,800,"Mercari");
+		product.sell(sale);	
+		service.addProduct(product);
+		}
 }
